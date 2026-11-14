@@ -1,0 +1,19 @@
+# Data, caches, and generated outputs (large; keep local)
+data/
+
+# Local manifest (copy of configs/stillness_clips.example.csv)
+configs/stillness_clips.csv
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv*/
+venv/
+build/
+dist/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
