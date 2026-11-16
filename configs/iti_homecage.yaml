@@ -1,0 +1,54 @@
+# Inactivity detection for the ITI home-cage fiber-photometry videos
+# (640x480, 10 fps, one tethered black mouse on bedding).
+# Pixel coordinates refer to the original video frame.
+
+detection:
+  prompt: black mouse
+  box_threshold: 0.2
+  text_threshold: 0.2
+  # Detections mostly inside these [x1, y1, x2, y2] boxes are ignored.
+  exclude_regions:
+    - [280, 405, 405, 480]  # black cable connector at bottom center
+  max_excluded_overlap: 0.6
+
+tracking:
+  chunk_size: 300
+  # At each chunk start, a confident detection that disagrees with the
+  # carried-over mask replaces it (corrects slow drift onto cable/bedding).
+  reseed_min_confidence: 0.5
+  reseed_max_iou: 0.3
+  # Search stride (frames) when the mouse must be re-detected inside a chunk.
+  redetect_stride: 10
+  # Masks empty or of implausible area for this many consecutive frames
+  # trigger re-detection and a fresh SAM2 start at that point.
+  failure_frames: 5
+  max_recoveries: 5
+
+activity:
+  blur_kernel: 5
+  mask_dilation_px: 3
+  background_margin_px: 25
+  # Pixel-change threshold = multiplier x typical background 99th percentile
+  # (ezTrack-style noise calibration, measured from each video itself).
+  noise_multiplier: 1.5
+  # Rolling median over this many frames, so one noisy frame cannot split a bout.
+  smoothing_frames: 3
+  # Fraction of mouse pixels that must change for a frame to count as moving.
+  # "auto" picks the valley of the per-video motion histogram (Otsu).
+  motion_threshold: auto
+  motion_threshold_bounds: [0.005, 0.10]
+  min_bout_s: 2.0
+  # Mask area outside these multiples of the median marks a frame uncertain
+  # (mouse hidden in nesting material, or mask bled onto the cable).
+  area_ratio_bounds: [0.4, 2.5]
+  summary_bin_s: 300
+  sensitivity:
+    threshold_scales: [0.5, 0.75, 1.0, 1.5, 2.0]
+    min_bout_s: [1.0, 2.0, 3.0, 5.0]
+
+review:
+  inactive_clips: 15
+  active_clips: 15
+  clip_pad_s: 1.0
+  max_clip_bout_s: 6.0
+  seed: 0

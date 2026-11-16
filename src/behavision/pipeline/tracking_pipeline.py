@@ -425,13 +425,11 @@ class TrackingPipeline:
         trajectory_points = []
 
 
-        # num_chunks = (
-        #     frame_count
-        #     + self.chunk_size
-        #     - 1
-        # ) // self.chunk_size
-
-        num_chunks = 1
+        num_chunks = (
+            frame_count
+            + self.chunk_size
+            - 1
+        ) // self.chunk_size
 
 
         print(

@@ -9,8 +9,25 @@ description = "Open-source video perception and behavioral analysis framework"
 requires-python = ">=3.10"
 dependencies = [
     "opencv-python",
-    "numpy"
+    "numpy",
+    "pandas",
+    "pyyaml",
+    "matplotlib",
+    "imageio-ffmpeg",
 ]
+
+[project.optional-dependencies]
+# Grounding DINO + SAM2 tracking. Install a CUDA/MPS-appropriate torch first.
+tracking = [
+    "torch>=2.3",
+    "transformers>=4.40",
+    "pillow",
+    "sam2>=1.1.0",
+]
+
+[project.scripts]
+behavision-run = "behavision.cli:main"
+behavision-combine = "behavision.aggregate:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

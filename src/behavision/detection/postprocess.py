@@ -98,3 +98,29 @@ def select_best_detection(
         detections,
         key=lambda d: d.confidence,
     )
+
+def drop_excluded(
+    detections: list[Detection],
+    regions: list,
+    max_overlap: float = 0.6,
+) -> list[Detection]:
+    """Remove detections lying mostly inside fixed [x1, y1, x2, y2] regions."""
+
+    kept = []
+
+    for detection in detections:
+        area = max(detection.width * detection.height, 1e-6)
+
+        covered = max(
+            (
+                max(0.0, min(detection.x2, x2) - max(detection.x1, x1))
+                * max(0.0, min(detection.y2, y2) - max(detection.y1, y1))
+                for x1, y1, x2, y2 in regions
+            ),
+            default=0.0,
+        )
+
+        if covered / area < max_overlap:
+            kept.append(detection)
+
+    return kept

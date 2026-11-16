@@ -17,3 +17,7 @@ dist/
 .DS_Store
 .vscode/
 .idea/
+
+# Slurm logs and local video lists
+logs/
+videos.txt

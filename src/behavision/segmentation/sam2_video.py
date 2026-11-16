@@ -79,6 +79,29 @@ class SAM2VideoSegmenter:
             )
         )
 
+    def add_mask(
+        self,
+        state,
+        frame_index: int,
+        mask: np.ndarray,
+        object_id: int = 1,
+    ):
+        return (
+            self.predictor
+            .add_new_mask(
+                inference_state=state,
+                frame_idx=frame_index,
+                obj_id=object_id,
+                mask=mask.astype(bool),
+            )
+        )
+
+    def reset(
+        self,
+        state,
+    ):
+        self.predictor.reset_state(state)
+
     def propagate(
         self,
         state,
