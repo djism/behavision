@@ -81,10 +81,12 @@ class GroundingDINODetector:
         with torch.no_grad():
             outputs = self.model(**inputs)
 
+        # `threshold` replaced `box_threshold` in transformers 4.51; 5.x
+        # dropped the old name.
         results = self.processor.post_process_grounded_object_detection(
             outputs,
             inputs["input_ids"],
-            box_threshold=self.box_threshold,
+            threshold=self.box_threshold,
             text_threshold=self.text_threshold,
             target_sizes=[
                 (
@@ -98,7 +100,7 @@ class GroundingDINODetector:
 
         boxes = results["boxes"]
         scores = results["scores"]
-        labels = results["text_labels"]
+        labels = results["text_labels"] if "text_labels" in results else results["labels"]
 
         for box, score, label in zip(
             boxes,
