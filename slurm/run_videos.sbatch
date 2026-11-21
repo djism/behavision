@@ -2,12 +2,12 @@
 # One array task per video. Submit from the repository root:
 #   sbatch --array=1-$(wc -l < videos.txt)%4 slurm/run_videos.sbatch videos.txt /path/to/results
 # videos.txt: one absolute video path per line. %4 caps concurrent GPU jobs.
-# Check partition names and limits with `sinfo -s` before the first run.
+# SeaWulf a100 nodes: 4 A100s, 64 CPUs, 256 GB each; one GPU per video.
 #SBATCH --job-name=behavision
-#SBATCH --partition=CHANGE_ME_GPU_PARTITION
+#SBATCH --partition=a100
 #SBATCH --gres=gpu:1
-#SBATCH --cpus-per-task=4
-#SBATCH --mem=32G
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=48G
 #SBATCH --time=08:00:00
 #SBATCH --output=logs/%x_%A_%a.out
 
@@ -20,8 +20,9 @@ VIDEO=$(sed -n "${SLURM_ARRAY_TASK_ID}p" "$LIST")
 [ -n "$VIDEO" ] || { echo "No line ${SLURM_ARRAY_TASK_ID} in $LIST"; exit 1; }
 NAME=$(basename "${VIDEO%.*}")
 
-# Environment created once on a login node (see docs/inactivity_pipeline.md).
-source "${BEHAVISION_ENV_SETUP:-$HOME/behavision_env.sh}"
+# Environment created once on a login node (see docs/inactivity_pipeline.md);
+# behavision_env.sh lives in the repository root (not committed).
+source "${BEHAVISION_ENV_SETUP:-$PWD/behavision_env.sh}"
 export HF_HUB_OFFLINE=1  # weights were downloaded in advance
 
 # Temporary chunk frames go to node-local scratch; results go to shared storage.

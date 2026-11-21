@@ -77,35 +77,37 @@ the same `--out`. Re-run only the cheap stages after changing activity or review
 settings: `--stages analyze,review`. Tracking settings or range cannot change
 inside an existing output directory.
 
-## Run on SeaWulf (to be verified on the cluster)
+## Run on SeaWulf
 
-One-time setup on a login node; partition names, modules, and CUDA versions
-must be checked there (`sinfo -s`, `module avail`):
+GPU jobs use the `a100` partition (nodes with 4 A100s, 8 h limit; `a100-long`
+allows 2 days). Home directories are only 20 GB, so the code, environment,
+caches, model weights, videos, and results all live under
+`/gpfs/projects/ShresthaGroup/behavision`.
 
-```bash
-git clone https://github.com/djism/behavision.git && cd behavision
-module load anaconda   # exact module name on SeaWulf to be checked
-conda create -y -p $HOME/envs/behavision python=3.11 && conda activate $HOME/envs/behavision
-pip install torch --index-url https://download.pytorch.org/whl/cu121   # match the GPU driver
-pip install -e ".[tracking]"
-export HF_HOME=$HOME/hf_cache
-python -c "from behavision.detection.grounding_dino import GroundingDINODetector as D; from behavision.segmentation.sam2_video import SAM2VideoSegmenter as S; D(device='cpu'); S(device='cpu')"
-cat > $HOME/behavision_env.sh <<EOF
-module load anaconda
-conda activate $HOME/envs/behavision
-export HF_HOME=$HOME/hf_cache
-EOF
-```
-
-Then set the GPU partition in `slurm/run_videos.sbatch`, list videos (one
-absolute path per line) and submit one array task per video:
+One-time setup on a login node:
 
 ```bash
-mkdir -p logs
-ls /path/to/videos/*.avi > videos.txt
-sbatch --array=1-$(wc -l < videos.txt)%4 slurm/run_videos.sbatch videos.txt /path/to/results
-behavision-combine /path/to/results   # after all tasks finish
+mkdir -p /gpfs/projects/ShresthaGroup/behavision && cd /gpfs/projects/ShresthaGroup/behavision
+git clone https://github.com/djism/behavision.git code && cd code
+bash slurm/setup_seawulf.sh   # conda env, PyTorch, weights download, behavision_env.sh
 ```
 
-Use `--array=1` for the first single-video test. A failed or timed-out task can
-be resubmitted with `--array=<task id>`; it resumes from its checkpoints.
+Copy the videos from the computer that has them (run there, not on SeaWulf):
+
+```bash
+rsync -av --progress /path/to/videos_ITI/ NETID@milan.seawulf.stonybrook.edu:/gpfs/projects/ShresthaGroup/behavision/videos_ITI/
+```
+
+Submit from the repository root (`.../behavision/code`), one array task per
+video:
+
+```bash
+ls /gpfs/projects/ShresthaGroup/behavision/videos_ITI/*.avi > videos.txt
+sbatch --array=1 slurm/run_videos.sbatch videos.txt ../results            # first: one video
+sbatch --array=2-$(wc -l < videos.txt)%4 slurm/run_videos.sbatch videos.txt ../results
+squeue -u $USER; tail -f logs/behavision_*.out                         # watch progress
+behavision-combine ../results   # after all tasks finish (source behavision_env.sh first)
+```
+
+`%4` caps how many videos run at once. A failed or timed-out task can be
+resubmitted with `--array=<task id>`; it resumes from its checkpoints.

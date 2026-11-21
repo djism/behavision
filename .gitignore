@@ -21,3 +21,4 @@ dist/
 # Slurm logs and local video lists
 logs/
 videos.txt
+behavision_env.sh
