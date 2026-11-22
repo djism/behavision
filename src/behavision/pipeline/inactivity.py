@@ -240,6 +240,11 @@ class MouseTracker:
                 masks.update(found)
                 if failed_at is None or info["recoveries"] >= cfg_t["max_recoveries"]:
                     break
+                # Search strictly after the last prompt: while the mouse is hidden
+                # (e.g. under nesting paper) each recovery can fail at its own
+                # frame, and must not be retried there.
+                if prompt_kind == "box":
+                    failed_at = max(failed_at, prompt_frame - shift + cfg_t["redetect_stride"])
                 recovery = self._find_detection(images, failed_at)
                 if recovery is None:
                     break

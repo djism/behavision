@@ -149,9 +149,10 @@ class FakeSegmenter:
     masks from that frame on, imitating a SAM2 failure.
     """
 
-    def __init__(self, lose_after=None):
+    def __init__(self, lose_after=None, hidden=None):
         self.seeds = []
         self.lose_after = lose_after
+        self.hidden = hidden  # (start, stop) SAM2 frames with empty masks after every reset
         self.resets = 0
 
     def reset(self, state):
@@ -170,6 +171,8 @@ class FakeSegmenter:
         for i, path in enumerate(state[start_frame_index:], start_frame_index):
             mask = cv2.imread(str(path), cv2.IMREAD_GRAYSCALE) < 60
             if self.lose_after is not None and self.resets == 0 and i >= self.lose_after:
+                mask = np.zeros_like(mask)
+            if self.hidden is not None and self.hidden[0] <= i < self.hidden[1]:
                 mask = np.zeros_like(mask)
             yield TrackedMask(i, 1, mask)
 
@@ -196,6 +199,22 @@ class TrackerTests(unittest.TestCase):
             self.assertEqual(segmenter.seeds, [("box", 0), ("box", 12)])
             self.assertTrue(tracking["tracked"].all())
             self.assertEqual(pd.read_csv(tmp / "out" / "tracking_chunks.csv").loc[0, "recoveries"], 1)
+
+    def test_keeps_searching_while_mouse_is_hidden(self):
+        # Detector still fires but SAM2 loses the mouse for frames 6-29 after
+        # every restart (mouse under nesting paper); tracking must resume once
+        # it reappears even though that takes more than 5 attempts.
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            write_video(tmp / "v.avi", [5 + i for i in range(40)])
+            config = load_config(None)
+            config["tracking"].update(chunk_size=40, redetect_stride=2)
+            tracker = MouseTracker(config, detector=FakeDetector(), segmenter=FakeSegmenter(hidden=(6, 30)))
+            tracking = tracker.track(str(tmp / "v.avi"), tmp / "out", tmp / "work", log=lambda _: None)
+            tracked = tracking.set_index("frame")["tracked"]
+            self.assertTrue(tracked.loc[30:].all())
+            self.assertFalse(tracked.loc[6:29].any())
+            self.assertGreater(pd.read_csv(tmp / "out" / "tracking_chunks.csv").loc[0, "recoveries"], 5)
 
     def test_chunked_tracking_resume_and_bout(self):
         with tempfile.TemporaryDirectory() as tmp:

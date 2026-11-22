@@ -31,4 +31,4 @@ trap 'rm -rf "$WORK"' EXIT
 
 echo "Task ${SLURM_ARRAY_TASK_ID}: $VIDEO on $(hostname)"
 nvidia-smi --query-gpu=name,memory.total --format=csv,noheader || true
-behavision-run "$VIDEO" --config "$CONFIG" --out "$RESULTS/$NAME" --work-dir "$WORK"
+behavision-run "$VIDEO" --config "$CONFIG" --out "$RESULTS/$NAME" --work-dir "$WORK" --annotated-video

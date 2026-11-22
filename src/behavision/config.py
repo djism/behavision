@@ -20,7 +20,7 @@ DEFAULTS = {
         "reseed_max_iou": 0.3,
         "redetect_stride": 10,
         "failure_frames": 5,
-        "max_recoveries": 5,
+        "max_recoveries": 30,
     },
     "activity": {
         "blur_kernel": 5,

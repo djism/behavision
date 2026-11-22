@@ -22,7 +22,7 @@ tracking:
   # Masks empty or of implausible area for this many consecutive frames
   # trigger re-detection and a fresh SAM2 start at that point.
   failure_frames: 5
-  max_recoveries: 5
+  max_recoveries: 30
 
 activity:
   blur_kernel: 5
