@@ -31,4 +31,6 @@ trap 'rm -rf "$WORK"' EXIT
 
 echo "Task ${SLURM_ARRAY_TASK_ID}: $VIDEO on $(hostname)"
 nvidia-smi --query-gpu=name,memory.total --format=csv,noheader || true
+python -c "import torch, sys; ok = torch.cuda.is_available(); print('torch', torch.__version__, 'CUDA available:', ok); sys.exit(0 if ok else 1)" \
+  || { echo "No usable GPU (driver too old for this PyTorch build?); stopping instead of running on CPU."; exit 1; }
 behavision-run "$VIDEO" --config "$CONFIG" --out "$RESULTS/$NAME" --work-dir "$WORK" --annotated-video
