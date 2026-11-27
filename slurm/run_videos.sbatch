@@ -22,7 +22,11 @@ NAME=$(basename "${VIDEO%.*}")
 
 # Environment created once on a login node (see docs/inactivity_pipeline.md);
 # behavision_env.sh lives in the repository root (not committed).
+# Module and conda activation scripts reference unset variables; relax -u here.
+set +u
 source "${BEHAVISION_ENV_SETUP:-$PWD/behavision_env.sh}"
+set -u
+echo "python: $(command -v python)"
 export HF_HUB_OFFLINE=1  # weights were downloaded in advance
 
 # Temporary chunk frames go to node-local scratch; results go to shared storage.
