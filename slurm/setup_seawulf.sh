@@ -12,7 +12,9 @@ export CONDA_PKGS_DIRS=$BASE/conda_pkgs PIP_CACHE_DIR=$BASE/cache/pip XDG_CACHE_
 export HF_HOME=$BASE/hf_cache MPLCONFIGDIR=$BASE/mpl
 module load anaconda/3
 [ -d "$ENV" ] || conda create -y -p "$ENV" python=3.11
-source activate "$ENV" 2>/dev/null || conda activate "$ENV"
+# Use the environment by PATH: `conda activate` needs `conda init`, which
+# batch jobs do not have.
+export PATH=$ENV/bin:$PATH
 
 # CUDA wheels bundle their own CUDA runtime; only the GPU driver is needed.
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
@@ -27,8 +29,7 @@ print("Model weights cached")
 EOF
 
 cat > behavision_env.sh <<EOF
-module load anaconda/3
-source activate $ENV 2>/dev/null || conda activate $ENV
+export PATH=$ENV/bin:\$PATH
 export HF_HOME=$BASE/hf_cache MPLCONFIGDIR=$BASE/mpl XDG_CACHE_HOME=$BASE/cache
 EOF
 mkdir -p logs
