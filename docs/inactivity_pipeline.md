@@ -111,3 +111,12 @@ behavision-combine ../results   # after all tasks finish (source behavision_env.
 
 `%4` caps how many videos run at once. A failed or timed-out task can be
 resubmitted with `--array=<task id>`; it resumes from its checkpoints.
+
+## Run on Google Colab
+
+`notebooks/colab_run.ipynb` runs every video in a Google Drive folder
+(`MyDrive/behavision/videos_ITI/` by default) on a Colab GPU and writes the
+same per-video outputs, including `annotated.mp4`, to
+`MyDrive/behavision/results/`. Results are checkpointed on Drive, so after a
+disconnect, re-running all cells skips finished videos and resumes the
+unfinished one.

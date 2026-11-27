@@ -20,7 +20,7 @@ dependencies = [
 # Grounding DINO + SAM2 tracking. Install a CUDA/MPS-appropriate torch first.
 tracking = [
     "torch>=2.3",
-    "transformers>=4.40",
+    "transformers>=4.51",
     "pillow",
     "sam2>=1.1.0",
 ]
