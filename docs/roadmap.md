@@ -41,10 +41,24 @@ the output unchanged are allowed.
 - `torch.inference_mode`, and splitting a video into segments that run on
   several GPUs at once.
 - bfloat16 on A100/L4/A10G, accepted only if the Phase 1 metrics don't change.
-- Benchmarks of throughput (video-minutes per GPU-hour) and cost per video-hour
-  on the T4, A10G, A100 and Mac MPS.
-- Docker image; batch backends for Slurm, Colab and AWS Batch (spot).
-- A small job API: upload a video, get status, download the results.
+- Benchmarks of throughput (video-minutes per GPU-hour) on the T4 (Colab,
+  Kaggle), A100 (SeaWulf) and Mac MPS.
+- One job runner with interchangeable backends (local, Slurm, Colab, Kaggle):
+  the same command submits a batch, tracks progress, resumes after a failure
+  and collects results, wherever it runs.
+- Docker image published free on GitHub Container Registry; the Slurm side
+  can run it through Apptainer.
+- Continuous integration on GitHub Actions: tests plus a short CPU smoke run
+  on a tiny public clip.
+- Public demo with no paid servers:
+  - "Open in Colab" notebook that runs the pipeline on the user's own GPU
+    session.
+  - Hugging Face Space (free CPU) that browses precomputed results on public
+    clips.
+  - Project page on GitHub Pages with metrics, benchmarks and example clips.
+
+**Budget: zero.** Everything runs on SeaWulf, Colab, Kaggle, the Mac and free
+hosting.
 
 ## Phase 3: generalize
 
